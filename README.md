@@ -1,4 +1,4 @@
-# Cazafantasmas: Noche de Halloween
+# Dark Souls 2D
 
 ## Contexto
 Este proyecto es un videojuego 2D de temática de Halloween. El jugador intenta atrapar fantasmas haciendo clic sobre ellos mientras se mueven por un escenario nocturno.
