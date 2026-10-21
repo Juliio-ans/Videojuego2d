@@ -25,10 +25,10 @@ El juego permite practicar conceptos de movimiento, coordenadas, velocidad, rebo
 - Git y GitHub Pages
 
 ## Integrantes
-- Nombre: [Diaz Jimenez Julio Emanuel]
-- Número de control: [24200260]
-- Nombre: [Perez Gomez Jocelyn Patricia]
-- Número de control: [24200830]
+- Nombre: Diaz Jimenez Julio Emanuel
+- Número de control: 24200260
+- Nombre: Perez Gomez Jocelyn Patricia
+- Número de control: 24200830
 
 ## Conclusiones
 Con este proyecto se practica la creación de un escenario gráfico en dos dimensiones y el movimiento de objetos mediante JavaScript. La detección de colisiones permite cambiar la trayectoria de los fantasmas y mostrar un efecto visual de impacto. La interacción con el mouse agrega una meta al juego y el contador permite observar el resultado de las acciones del jugador. Git y GitHub ayudan a registrar cambios y publicar la aplicación para que pueda ejecutarse en línea.

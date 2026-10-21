@@ -15,7 +15,6 @@ const TOTAL_GHOSTS = 25;
 let ghosts = [];
 let particles = [];
 let score = 0;
-let audioContext = null;
 let musicOscillators = [];
 let musicOn = false;
 let lastTime = 0;
@@ -229,6 +228,7 @@ canvas.addEventListener("click", event => {
     spawnImpact(caught.x, caught.y);
     ghosts.splice(hitIndex, 1);
     ghosts.push(makeGhost()); // siempre conserva 25 fantasmas
+    playCatchSound(caught.type);
     score += caught.type === "skull" ? 3 : 1;
     scoreLabel.textContent = score;
   }
@@ -238,34 +238,156 @@ restartBtn.addEventListener("click", resetGame);
 
 // Música ambiental sintetizada con Web Audio API; no requiere descargar archivos externos.
 // El navegador solo permite iniciar audio después de una interacción del usuario.
+
+let audioContext;
+let musicGain;
+let musicTimer;
+let musicPlaying = false;
+let musicStep = 0;
+
 function startMusic() {
-  const AudioCtx = window.AudioContext || window.webkitAudioContext;
-  if (!AudioCtx) { musicBtn.textContent = "Audio no disponible"; return; }
-  audioContext = audioContext || new AudioCtx();
-  if (audioContext.state === "suspended") audioContext.resume();
-  const master = audioContext.createGain();
-  master.gain.value = .035;
-  master.connect(audioContext.destination);
-  const notes = [110, 130.81, 164.81, 146.83];
-  notes.forEach((frequency, index) => {
-    const osc = audioContext.createOscillator();
-    const gain = audioContext.createGain();
-    osc.type = index % 2 ? "triangle" : "sine";
-    osc.frequency.value = frequency;
-    gain.gain.value = index === 0 ? .7 : .28;
-    osc.connect(gain); gain.connect(master); osc.start();
-    musicOscillators.push({ osc, gain, master });
+  if (musicPlaying) return;
+
+  const AudioContextClass =
+    window.AudioContext || window.webkitAudioContext;
+
+  if (!AudioContextClass) {
+    console.log("Este navegador no admite Web Audio.");
+    return;
+  }
+
+  if (!audioContext) {
+    audioContext = new AudioContextClass();
+  }
+
+  audioContext.resume().then(() => {
+    if (musicPlaying) return;
+
+    musicGain = audioContext.createGain();
+    musicGain.gain.value = 0.22;
+    musicGain.connect(audioContext.destination);
+
+    musicPlaying = true;
+
+    const melody = [
+      220, 261.63, 293.66, 261.63,
+      196, 220, 164.81, 196,
+      220, 329.63, 293.66, 220,
+      174.61, 196, 146.83, 164.81
+    ];
+
+    function playNote() {
+      if (!musicPlaying) return;
+
+      const now = audioContext.currentTime;
+      const osc = audioContext.createOscillator();
+      const volume = audioContext.createGain();
+
+      osc.type = "triangle";
+      osc.frequency.value = melody[musicStep % melody.length];
+
+      volume.gain.setValueAtTime(0.001, now);
+      volume.gain.exponentialRampToValueAtTime(0.35, now + 0.04);
+      volume.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
+
+      osc.connect(volume);
+      volume.connect(musicGain);
+
+      osc.start(now);
+      osc.stop(now + 0.5);
+
+      musicStep++;
+    }
+
+    playNote();
+    musicTimer = setInterval(playNote, 400);
+  }).catch(error => {
+    console.error("No se pudo iniciar el audio:", error);
   });
-  musicOn = true;
-  musicBtn.textContent = "Apagar música";
 }
+
+
 function stopMusic() {
-  musicOscillators.forEach(item => { try { item.osc.stop(); } catch (e) {} });
-  musicOscillators = [];
-  musicOn = false;
-  musicBtn.textContent = "Activar música";
+  musicPlaying = false;
+
+  if (musicTimer) {
+    clearInterval(musicTimer);
+    musicTimer = null;
+  }
+
+  if (musicGain && audioContext) {
+    musicGain.gain.cancelScheduledValues(
+      audioContext.currentTime
+    );
+
+    musicGain.gain.setValueAtTime(
+      0,
+      audioContext.currentTime
+    );
+  }
 }
-musicBtn.addEventListener("click", () => musicOn ? stopMusic() : startMusic());
+
+
+
+musicBtn.addEventListener("click", () => {
+  if (musicPlaying) {
+    stopMusic();
+    musicBtn.textContent = "🔇 Activar música";
+  } else {
+    startMusic();
+    musicBtn.textContent = "🔊 Desactivar música";
+  }
+});
+
 
 // Ajuste de tamaño visual manteniendo las coordenadas lógicas del canvas.
 window.addEventListener("resize", () => {});
+
+
+
+function playCatchSound(type = "ghost") {
+  const AudioContextClass =
+    window.AudioContext || window.webkitAudioContext;
+
+  if (!AudioContextClass) return;
+
+  if (!audioContext) {
+    audioContext = new AudioContextClass();
+  }
+
+  audioContext.resume().then(() => {
+    const now = audioContext.currentTime;
+    const osc = audioContext.createOscillator();
+    const volume = audioContext.createGain();
+
+    if (type === "skull") {
+      // Sonido especial para el cráneo
+      osc.type = "sawtooth";
+      osc.frequency.setValueAtTime(650, now);
+      osc.frequency.exponentialRampToValueAtTime(
+        180, now + 0.35
+      );
+    } else {
+      // Sonido corto y mágico para el fantasma
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(880, now);
+      osc.frequency.exponentialRampToValueAtTime(
+        440, now + 0.15
+      );
+    }
+
+    volume.gain.setValueAtTime(0.001, now);
+    volume.gain.linearRampToValueAtTime(0.3, now + 0.02);
+    volume.gain.exponentialRampToValueAtTime(
+      0.001, now + 0.28
+    );
+
+    osc.connect(volume);
+    volume.connect(audioContext.destination);
+
+    osc.start(now);
+    osc.stop(now + 0.3);
+  }).catch(error => {
+    console.error("No se pudo reproducir el efecto:", error);
+  });
+}
