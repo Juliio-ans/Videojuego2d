@@ -1,0 +1,33 @@
+* { box-sizing: border-box; }
+:root { color-scheme: dark; }
+body {
+  margin: 0; min-height: 100vh; color: #fff;
+  background: radial-gradient(circle at top, #263451 0, #111827 48%, #080c16 100%);
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+.site-header { background: rgba(8, 12, 22, .72); border-bottom: 1px solid #39445d; }
+.site-header h1 { color: #ffb84d; font-weight: 900; letter-spacing: .04em; }
+.site-header p { color: #cbd5e1; }
+.header-ghost { width: 62px; height: 62px; }
+.instructions { background: #192337; color: #f8fafc; border: 1px solid #3a4760; }
+.instructions p { color: #d5dcec; }
+.score-pill { padding: .45rem .8rem; border-radius: 999px; background: #303c56; border: 1px solid #65718a; }
+#score { color: #ffd166; font-size: 1.1rem; }
+.game-frame {
+  position: relative; overflow: hidden; border: 2px solid #68738d;
+  border-radius: 14px; box-shadow: 0 18px 40px #0008; background: #0a1020;
+}
+#gameCanvas { display: block; width: 100%; height: auto; cursor: crosshair; touch-action: manipulation; }
+.canvas-hint {
+  position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%);
+  color: #f8fafc; background: #080c16b8; border: 1px solid #ffffff30;
+  border-radius: 999px; padding: .35rem .8rem; font-size: .85rem; pointer-events: none;
+  white-space: nowrap;
+}
+.site-footer { color: #cbd5e1; background: #080c16; border-top: 1px solid #39445d; font-size: .9rem; }
+button { font-weight: 650 !important; }
+@media (max-width: 575px) {
+  .header-ghost { width: 48px; height: 48px; }
+  .site-header h1 { font-size: 1.7rem; }
+  .canvas-hint { font-size: .7rem; bottom: 5px; }
+}
